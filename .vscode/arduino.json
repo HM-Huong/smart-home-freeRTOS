@@ -1,0 +1,6 @@
+{
+    "sketch": "final-project.ino",
+    "board": "arduino:avr:uno",
+    "output": "build",
+    "port": "COM5"
+}
