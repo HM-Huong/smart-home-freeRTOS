@@ -1,7 +1,7 @@
 #include "dhtTask.h"
 #include "DHT.h"
 
-static DHT dht(2, DHT22);
+static DHT dht(10, DHT22);
 
 void dhtTask(void *pvParameters) {
 	void const *pcv = NULL;

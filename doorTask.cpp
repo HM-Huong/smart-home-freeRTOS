@@ -3,14 +3,14 @@
 
 static const byte ROWS = 4;
 static const byte COLS = 4;
-static const char KEY_MAP[ROWS][COLS] = {
+static char KEYS[ROWS][COLS] = {
 	{'1', '2', '3', 'A'},
 	{'4', '5', '6', 'B'},
 	{'7', '8', '9', 'C'},
-	{'*', '0', '#', 'D'}};
-static const byte PIN_ROWS[ROWS] = {8, 9, 10, 11};
-static const byte PIN_COLS[COLS] = {7, 6, 5, 4};
-static Keypad keypad = Keypad(makeKeymap(KEY_MAP), (byte *)PIN_ROWS, (byte *)PIN_COLS, ROWS, COLS);
+	{'0', 'F', 'E', 'D'}};
+static const byte PIN_ROWS[ROWS] = {2, 3, 4, 5};
+static const byte PIN_COLS[COLS] = {6, 7, 8, 9};
+static Keypad keypad = Keypad(makeKeymap(KEYS), (byte *)PIN_ROWS, (byte *)PIN_COLS, ROWS, COLS);
 
 void DoorOpeningTask(void *pvParameters) {
 	BaseType_t rc;
@@ -30,11 +30,11 @@ void DoorOpeningTask(void *pvParameters) {
 		}
 
 		switch (key) {
-		case '*':
+		case 'D':
 			if (input_len > 0)
 				input_len--;
 			break;
-		case '#':
+		case 'E':
 			input[input_len] = '\0';
 			if (strcmp(input, passwd) == 0) {
 				pcv = "Door opened";
@@ -54,5 +54,8 @@ void DoorOpeningTask(void *pvParameters) {
 			input_len = (input_len + 1) % MAX_LEN;
 			break;
 		}
+		pcv = input;
+		input[input_len] = '\0';
+		rc = xQueueSend(monitorQueue, &pcv, portMAX_DELAY);
 	}
 }

@@ -14,7 +14,7 @@ void setup() {
 	monitorQueue = xQueueCreate(4, sizeof(char *));
 
 	rc = xTaskCreate(dhtTask, "dhtTask", 390, NULL, 1, NULL);
-	rc = xTaskCreate(DoorOpeningTask, "DoorOpeningTask", 90, NULL, 1, NULL);
+	rc = xTaskCreate(DoorOpeningTask, "DoorOpeningTask", 100, NULL, 1, NULL);
 	rc = xTaskCreate(SerialPrintTask, "SerialPrintTask", 70, NULL, 1, NULL);
 
 	Serial.println("Setup done");
