@@ -1,5 +1,6 @@
-#include "global.h"
 #include "doorTask.h"
+#include "flameSensor.h"
+#include "global.h"
 
 QueueHandle_t monitorQueue;
 SemaphoreHandle_t buzzerMutex;
@@ -16,6 +17,7 @@ void setup() {
 
 	rc = xTaskCreate(SerialPrintTask, "SerialPrintTask", 70, NULL, 1, NULL);
 	rc = xTaskCreate(DoorOpeningTask, "DoorOpeningTask", 60, NULL, 1, NULL);
+	rc = xTaskCreate(flameSensorTask, "flameSensorTask", 60, NULL, 1, NULL);
 
 	Serial.println("Setup done");
 }
