@@ -22,7 +22,6 @@ static const int MAX_LEN = 20;
 static char passwd[MAX_LEN] = "1234";
 static char input[MAX_LEN] = "";
 static byte input_len = 0;
-static Note note;
 
 void DoorOpeningTask(void *pvParameters) {
 	while (1) {
@@ -35,7 +34,7 @@ void DoorOpeningTask(void *pvParameters) {
 
 		switch (key) {
 		case 'D':
-			note = {1000, 100};
+			buzzerPlay(1000, 100);
 			if (input_len > 0)
 				input_len--;
 			break;
@@ -43,28 +42,27 @@ void DoorOpeningTask(void *pvParameters) {
 			input[input_len] = '\0';
 			if (strcmp(input, passwd) == 0) {
 				pcv = "Door opened";
-				note = {4699, 100};
+				buzzerPlay(4699, 100);
+				buzzerPlay(4699, 100);
 			} else {
 				pcv = "Wrong password";
-				note = {100, 800};
+				buzzerPlay(100, 800);
 			}
-			xQueueSend(buzzerQueue, &note, portMAX_DELAY);
 			rc = xQueueSend(monitorQueue, &pcv, portMAX_DELAY);
 			input_len = 0;
 			break;
 		case 'C':
-			note = {1000, 100};
+			buzzerPlay(1000, 100);
 			input_len = 0;
 			pcv = "Input cleared";
 			rc = xQueueSend(monitorQueue, &pcv, portMAX_DELAY);
 			break;
 		default:
-			note = {1000, 100};
+			buzzerPlay(1000, 100);
 			input[input_len] = key;
 			input_len = (input_len + 1) % MAX_LEN;
 			break;
 		}
-		xQueueSend(buzzerQueue, &note, portMAX_DELAY);
 		pcv = input;
 		input[input_len] = '\0';
 		rc = xQueueSend(monitorQueue, &pcv, portMAX_DELAY);
