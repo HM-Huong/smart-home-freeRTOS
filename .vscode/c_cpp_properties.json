@@ -16,9 +16,11 @@
             ],
             "intelliSenseMode": "gcc-x64",
             "includePath": [
+                "C:\\Users\\Leo\\AppData\\Local\\Arduino15\\libraries\\**",
                 "C:\\Users\\Leo\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.6\\cores\\arduino",
                 "C:\\Users\\Leo\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.6\\variants\\standard",
                 "D:\\OneDrive - devhmh\\Documents\\Arduino\\libraries\\FreeRTOS\\src",
+                "D:\\OneDrive - devhmh\\Documents\\Arduino\\libraries\\LiquidCrystal\\src",
                 "D:\\OneDrive - devhmh\\Documents\\Arduino\\libraries\\DHT_sensor_library",
                 "D:\\OneDrive - devhmh\\Documents\\Arduino\\libraries\\Keypad\\src",
                 "D:\\OneDrive - devhmh\\Documents\\Arduino\\libraries\\Adafruit_Unified_Sensor",
