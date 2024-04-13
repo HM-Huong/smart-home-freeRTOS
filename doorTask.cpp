@@ -1,9 +1,9 @@
 #include "doorTask.h"
 #include "Arduino_FreeRTOS.h"
 #include "Keypad.h"
+#include "Servo.h"
 #include "global.h"
 #include "string.h"
-#include "Servo.h"
 
 static const byte ROWS = 4;
 static const byte COLS = 4;
@@ -14,7 +14,6 @@ static char KEYS[ROWS][COLS] = {
 	{'0', 'F', 'E', 'D'}};
 static const byte PIN_ROWS[ROWS] = {2, 3, 4, 5};
 static const byte PIN_COLS[COLS] = {6, 7, 8, 9};
-static const int SERVO_PIN = 10;
 
 static Keypad keypad = Keypad(makeKeymap(KEYS), (byte *)PIN_ROWS, (byte *)PIN_COLS, ROWS, COLS);
 static BaseType_t rc;
@@ -24,6 +23,7 @@ static const int MAX_LEN = 20;
 static char passwd[MAX_LEN] = "1234";
 static char input[MAX_LEN] = "";
 static byte input_len = 0;
+static PrintData printData;
 Servo servo;
 
 void inline openDoor() {
@@ -54,29 +54,26 @@ void DoorOpeningTask(void *pvParameters) {
 		case 'E':
 			input[input_len] = '\0';
 			if (strcmp(input, passwd) == 0) {
-				pcv = "Door opened";
+				lcdPrint(printData, "Door opened", 1, 0, portMAX_DELAY);
 				openDoor();
 				buzzerPlay(4699, 100);
 				buzzerPlay(4699, 100);
 			} else {
-				pcv = "Wrong password";
+				lcdPrint(printData, "Wrong password", 1, 0, portMAX_DELAY);
 				buzzerPlay(100, 800);
 			}
-			rc = xQueueSend(monitorQueue, &pcv, portMAX_DELAY);
 			input_len = 0;
 			break;
 		case 'F':
 			buzzerPlay(1000, 100);
 			closeDoor();
 			input_len = 0;
-			pcv = "Door closed";
-			rc = xQueueSend(monitorQueue, &pcv, portMAX_DELAY);
+			lcdPrint(printData, "Door closed", 1, 0, portMAX_DELAY);
 			break;
 		case 'C':
 			buzzerPlay(1000, 100);
 			input_len = 0;
-			pcv = "Input cleared";
-			rc = xQueueSend(monitorQueue, &pcv, portMAX_DELAY);
+			lcdPrint(printData, "Input cleared", 1, 0, portMAX_DELAY);
 			break;
 		default:
 			buzzerPlay(1000, 100);
@@ -84,8 +81,5 @@ void DoorOpeningTask(void *pvParameters) {
 			input_len = (input_len + 1) % MAX_LEN;
 			break;
 		}
-		pcv = input;
-		input[input_len] = '\0';
-		rc = xQueueSend(monitorQueue, &pcv, portMAX_DELAY);
 	}
 }
