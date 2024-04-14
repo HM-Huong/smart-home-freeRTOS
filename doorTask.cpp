@@ -1,8 +1,8 @@
 #include "doorTask.h"
-#include "Arduino_FreeRTOS.h"
+#include "ESP32Servo.h"
 #include "Keypad.h"
-#include "Servo.h"
 #include "global.h"
+#include "printTask.h"
 #include "string.h"
 
 static const byte ROWS = 4;
@@ -12,8 +12,9 @@ static char KEYS[ROWS][COLS] = {
 	{'4', '5', '6', 'B'},
 	{'7', '8', '9', 'C'},
 	{'0', 'F', 'E', 'D'}};
-static const byte PIN_ROWS[ROWS] = {2, 3, 4, 5};
-static const byte PIN_COLS[COLS] = {6, 7, 8, 9};
+
+static const byte PIN_ROWS[ROWS] = {KEY_R1, KEY_R2, KEY_R3, KEY_R4};
+static const byte PIN_COLS[COLS] = {KEY_C1, KEY_C2, KEY_C3, KEY_C4};
 
 static Keypad keypad = Keypad(makeKeymap(KEYS), (byte *)PIN_ROWS, (byte *)PIN_COLS, ROWS, COLS);
 static BaseType_t rc;

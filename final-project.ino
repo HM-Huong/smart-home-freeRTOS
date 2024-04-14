@@ -1,8 +1,8 @@
-#include "doorTask.h"
-#include "flameSensor.h"
 #include "global.h"
 #include "printTask.h"
+#include "doorTask.h"
 #include "dhtTask.h"
+#include "flameSensor.h"
 
 QueueHandle_t printQueue;
 SemaphoreHandle_t buzzerMutex;
@@ -10,14 +10,14 @@ SemaphoreHandle_t buzzerMutex;
 void setup() {
 	Serial.begin(115200);
 
-	printQueue = xQueueCreate(4, sizeof(PrintData));
 	buzzerMutex = xSemaphoreCreateMutex();
 	pinMode(BUZZER_PIN, OUTPUT);
+	printQueue = xQueueCreate(4, sizeof(PrintData));
 
-	xTaskCreate(printTask, "SerialPrintTask", 64, NULL, 1, NULL);
-	xTaskCreate(DoorOpeningTask, "DoorOpeningTask", 50, NULL, 1, NULL);
-	xTaskCreate(dhtTask, "dhtTask", 336, NULL, 1, NULL);
-	xTaskCreate(flameSensorTask, "flameSensorTask", 60, NULL, 1, NULL);
+	xTaskCreate(printTask, "SerialPrintTask", 500, NULL, 1, NULL);
+	xTaskCreate(DoorOpeningTask, "DoorOpeningTask", 500, NULL, 1, NULL);
+	xTaskCreate(dhtTask, "DHTTask", 500, NULL, 1, NULL);
+	xTaskCreate(flameSensorTask, "FlameSensorTask", 500, NULL, 1, NULL);
 
 	Serial.println("Setup done");
 }

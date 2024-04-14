@@ -1,6 +1,6 @@
 #include "flameSensor.h"
-#include "Arduino_FreeRTOS.h"
 #include "global.h"
+#include "printTask.h"
 
 void flameSensorTask(void *pvParameters) {
 	PrintData printData;

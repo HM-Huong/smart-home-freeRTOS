@@ -1,6 +1,7 @@
 #include "dhtTask.h"
 #include "DHT.h"
 #include "global.h"
+#include "printTask.h"
 
 static DHT dht(DHT_PIN, DHT22);
 static char msg[18] = "Tem xxC Hum xx%";
