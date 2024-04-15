@@ -1,3 +1,3 @@
 #pragma once
 
-void DoorOpeningTask(void *pvParameters);
+void DoorTask(void *pvParameters);

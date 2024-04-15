@@ -1,5 +1,4 @@
 #include "doorTask.h"
-#include "ESP32Servo.h"
 #include "Keypad.h"
 #include "global.h"
 #include "printTask.h"
@@ -25,28 +24,24 @@ static char passwd[MAX_LEN] = "1234";
 static char input[MAX_LEN] = "";
 static byte input_len = 0;
 static PrintData printData;
-Servo servo;
 
-void inline openDoor() {
-	servo.write(0);
+inline char *maskedPasswd() {
+	static char masked[MAX_LEN];
+	for (int i = 0; i < input_len; i++) {
+		masked[i] = '*';
+	}
+	masked[input_len] = '\0';
+	return masked;
 }
 
-void inline closeDoor() {
-	servo.write(90);
-}
-
-void DoorOpeningTask(void *pvParameters) {
-	servo.attach(SERVO_PIN);
-
+void DoorTask(void *pvParameters) {
 	while (1) {
 		key = keypad.getKey();
-		if (key == NO_KEY) {
-			taskYIELD();
-			// delay(100);
-			continue;
-		}
 
 		switch (key) {
+		case NO_KEY:
+			taskYIELD();
+			continue;
 		case 'D':
 			buzzerPlay(1000, 100);
 			if (input_len > 0)
@@ -55,8 +50,8 @@ void DoorOpeningTask(void *pvParameters) {
 		case 'E':
 			input[input_len] = '\0';
 			if (strcmp(input, passwd) == 0) {
-				lcdPrint(printData, "Door opened", 1, 0, portMAX_DELAY);
 				openDoor();
+				lcdPrint(printData, "Door opened", 1, 0, portMAX_DELAY);
 				buzzerPlay(4699, 100);
 				buzzerPlay(4699, 100);
 			} else {
@@ -64,17 +59,16 @@ void DoorOpeningTask(void *pvParameters) {
 				buzzerPlay(100, 800);
 			}
 			input_len = 0;
-			break;
+			continue;
 		case 'F':
-			buzzerPlay(1000, 100);
 			closeDoor();
+			buzzerPlay(1000, 100);
 			input_len = 0;
 			lcdPrint(printData, "Door closed", 1, 0, portMAX_DELAY);
-			break;
+			continue;
 		case 'C':
 			buzzerPlay(1000, 100);
 			input_len = 0;
-			lcdPrint(printData, "Input cleared", 1, 0, portMAX_DELAY);
 			break;
 		default:
 			buzzerPlay(1000, 100);
@@ -82,5 +76,6 @@ void DoorOpeningTask(void *pvParameters) {
 			input_len = (input_len + 1) % MAX_LEN;
 			break;
 		}
+		lcdPrint(printData, maskedPasswd(), 1, 0, portMAX_DELAY);
 	}
 }

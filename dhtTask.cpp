@@ -5,7 +5,7 @@
 
 static DHT dht(DHT_PIN, DHT22);
 static char msg[18] = "Tem xxC Hum xx%";
-static int h, t;
+static float h, t;
 static void const *pcv = NULL;
 static PrintData printData;
 
@@ -14,11 +14,17 @@ void dhtTask(void *pvParameters) {
 	while (1) {
 		h = dht.readHumidity();
 		t = dht.readTemperature();
-		msg[4] = t / 10 + '0';
-		msg[5] = t % 10 + '0';
-		msg[12] = h / 10 + '0';
-		msg[13] = h % 10 + '0';
-		lcdPrint(printData, msg, 0, 0, portMAX_DELAY);
-		delay(2000);
+		if (isnan(h) || isnan(t)) {
+			serialPrint(printData, "DHT: error!", portMAX_DELAY);
+		} else {
+			msg[5] = t;
+			msg[4] = msg[5] / 10 + '0';
+			msg[5] = msg[5] % 10 + '0';
+			msg[13] = h;
+			msg[12] = msg[13] / 10 + '0';
+			msg[13] = msg[13] % 10 + '0';
+			lcdPrint(printData, msg, 0, 0, portMAX_DELAY);
+		}
+		delay(4000);
 	}
 }
