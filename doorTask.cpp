@@ -1,5 +1,6 @@
 #include "doorTask.h"
 #include "ESP32Servo.h"
+#include "cloudTask.h"
 #include "printTask.h"
 
 static const int CLOSE_ANGLE = 10;
@@ -12,6 +13,7 @@ static bool isOpen = false;
 inline void openDoor() {
 	servo.attach(SERVO_PIN);
 	servo.write(OPEN_ANGLE);
+	isOpen = true;
 	delay(500);
 	servo.detach();
 }
@@ -19,26 +21,27 @@ inline void openDoor() {
 inline void closeDoor() {
 	servo.attach(SERVO_PIN);
 	servo.write(CLOSE_ANGLE);
+	isOpen = false;
 	delay(500);
 	servo.detach();
 }
 
 static PrintData printData;
+static CloudData cloudData;
 
 void doorTask(void *pvParameters) {
-	servo.attach(SERVO_PIN);
-	servo.write(CLOSE_ANGLE);
+	closeDoor();
+	cloudData.type = CloudData::DOOR;
+	cloudData.data.openDoor = isOpen;
+	xQueueSend(cloudQueue, &cloudData, portMAX_DELAY);
 	while (1) {
 		xTaskNotifyWait(0, OPEN_BIT | CLOSE_BIT | TOGGLE_BIT, &event, portMAX_DELAY);
-
 		switch (event) {
 		case OPEN_BIT:
 			openDoor();
-			isOpen = true;
 			break;
 		case CLOSE_BIT:
 			closeDoor();
-			isOpen = false;
 			break;
 		case TOGGLE_BIT:
 			if (isOpen) {
@@ -46,16 +49,18 @@ void doorTask(void *pvParameters) {
 			} else {
 				openDoor();
 			}
-			isOpen = !isOpen;
 			break;
 		default:
+			assert(0);
 			break;
 		}
 
 		if (isOpen) {
-			lcdPrint(printData, "Door opened", 1, 0, portMAX_DELAY);
+			lcdPrint(printData, "Door opened", 1, 0, pdMS_TO_TICKS(1000));
 		} else {
-			lcdPrint(printData, "Door closed", 1, 0, portMAX_DELAY);
+			lcdPrint(printData, "Door closed", 1, 0, pdMS_TO_TICKS(1000));
 		}
+		cloudData.data.openDoor = isOpen;
+		xQueueSend(cloudQueue, &cloudData, pdMS_TO_TICKS(1000));
 	}
 }

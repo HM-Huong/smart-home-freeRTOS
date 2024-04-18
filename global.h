@@ -11,10 +11,10 @@
 
 extern SemaphoreHandle_t buzzerMutex;
 
-#define buzzerPlay(fre, dur)                        \
-	{                                               \
-		xSemaphoreTake(buzzerMutex, portMAX_DELAY); \
-		tone(BUZZER_PIN, fre, dur);                 \
-		delay(dur + dur / 2);                       \
-		xSemaphoreGive(buzzerMutex);                \
+#define buzzerPlay(fre, dur)                                       \
+	{                                                              \
+		xSemaphoreTake(buzzerMutex, pdMS_TO_TICKS(dur + dur / 2)); \
+		tone(BUZZER_PIN, fre, dur);                                \
+		delay(dur + dur / 2);                                      \
+		xSemaphoreGive(buzzerMutex);                               \
 	}

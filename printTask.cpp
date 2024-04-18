@@ -8,13 +8,11 @@ void printTask(void *pvParameters) {
 	lcd.init();
 	lcd.backlight();
 	lcd.clear();
-	lcd.setCursor(0, 0);
-	lcd.print("Hello, world!");
 
 	while (1) {
 		xQueueReceive(printQueue, &data, portMAX_DELAY);
 		Serial.println(data.msg);
-		if (data.row >= 0 && data.col >= 0) {
+		if (data.row >= 0 && data.col >= 0 && data.row < LCD_ROWS && data.col < LCD_COLS) {
 			lcd.setCursor(data.col, data.row);
 			lcd.print(data.msg);
 			lcd.print("                ");

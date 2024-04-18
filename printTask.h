@@ -2,6 +2,9 @@
 
 #include "Arduino.h"
 
+#define LCD_ROWS 2
+#define LCD_COLS 16
+
 #define serialPrint(container, message, delay)     \
 	{                                              \
 		container.msg = message;                   \
@@ -20,7 +23,7 @@
 extern QueueHandle_t printQueue;
 
 struct PrintData {
-	char *msg;
+	char const *msg;
 	int row;
 	int col;
 };
