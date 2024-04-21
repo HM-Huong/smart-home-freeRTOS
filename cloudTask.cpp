@@ -20,6 +20,7 @@
 #define B_FLAME V3
 #define B_REMOVE_TAG V4
 #define B_ADD_TAG V5
+#define B_NUM_OF_TAG V6
 
 BLYNK_WRITE(B_DOOR) {
 	int openDoor = param.asInt();
@@ -34,7 +35,7 @@ BLYNK_WRITE(B_DOOR) {
 
 BLYNK_WRITE(B_ADD_TAG) {
 	if (!param.asInt()) {
-		normalMode();
+		rfidNormalMode();
 		Blynk.virtualWrite(B_ADD_TAG, 0);
 	} else {
 		sendAddTagEvent();
@@ -44,7 +45,7 @@ BLYNK_WRITE(B_ADD_TAG) {
 
 BLYNK_WRITE(B_REMOVE_TAG) {
 	if (!param.asInt()) {
-		normalMode();
+		rfidNormalMode();
 		Blynk.virtualWrite(B_REMOVE_TAG, 0);
 	} else {
 		sendRemoveTagEvent();
@@ -70,6 +71,9 @@ void cloudTask(void *pvParameters) {
 				break;
 			case CloudData::FLAME:
 				Blynk.virtualWrite(B_FLAME, cloudData.data.flameStatus);
+				break;
+			case CloudData::RFID:
+				Blynk.virtualWrite(B_NUM_OF_TAG, cloudData.data.NumOfTag);
 				break;
 			default:
 				assert(0);

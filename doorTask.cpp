@@ -36,23 +36,16 @@ void doorTask(void *pvParameters) {
 	xQueueSend(cloudQueue, &cloudData, portMAX_DELAY);
 	while (1) {
 		xTaskNotifyWait(0, OPEN_BIT | CLOSE_BIT | TOGGLE_BIT, &event, portMAX_DELAY);
-		switch (event) {
-		case OPEN_BIT:
+		if (event & OPEN_BIT) {
 			openDoor();
-			break;
-		case CLOSE_BIT:
+		} else if (event & CLOSE_BIT) {
 			closeDoor();
-			break;
-		case TOGGLE_BIT:
+		} else if (event & TOGGLE_BIT) {
 			if (isOpen) {
 				closeDoor();
 			} else {
 				openDoor();
 			}
-			break;
-		default:
-			assert(0);
-			break;
 		}
 
 		if (isOpen) {

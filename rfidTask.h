@@ -6,15 +6,10 @@
 #define REMOVE_TAG (1 << 1)
 #define NORMAL_MODE (1 << 2)
 
-enum RFIDAction {
-	ADD = ADD_TAG,
-	REMOVE = REMOVE_TAG
-};
-
 extern TaskHandle_t rfidTaskHandle;
 
 #define sendAddTagEvent() xTaskNotify(rfidTaskHandle, ADD_TAG, eSetBits)
 #define sendRemoveTagEvent() xTaskNotify(rfidTaskHandle, REMOVE_TAG, eSetBits)
-#define normalMode() xTaskNotify(rfidTaskHandle, NORMAL_MODE, eSetBits)
+#define rfidNormalMode() xTaskNotify(rfidTaskHandle, NORMAL_MODE, eSetBits)
 
 void rfidTask(void *pvParameters);

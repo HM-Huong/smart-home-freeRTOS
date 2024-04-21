@@ -6,6 +6,7 @@ struct CloudData {
 		DOOR,
 		FLAME,
 		DHT,
+		RFID,
 	} type;
 	union {
 		int openDoor;
@@ -14,6 +15,7 @@ struct CloudData {
 			float temp;
 			float hum;
 		} dht;
+		int NumOfTag;
 	} data;
 };
 

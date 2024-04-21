@@ -89,6 +89,9 @@ static inline void configTags(uint32_t mode) {
 		removeTag(rfid.uid.uidByte);
 	}
 	saveTags();
+	cloudData.type = CloudData::RFID;
+	cloudData.data.NumOfTag = tags[0];
+	xQueueSend(cloudQueue, &cloudData, portMAX_DELAY);
 	delay(1000);
 	if (mode == ADD_TAG) {
 		lcdPrint(printData, "add tags", 1, 0, portMAX_DELAY);
@@ -103,6 +106,9 @@ void rfidTask(void *pvParameters) {
 		return;
 	}
 	loadTags();
+	cloudData.type = CloudData::RFID;
+	cloudData.data.NumOfTag = tags[0];
+	xQueueSend(cloudQueue, &cloudData, portMAX_DELAY);
 	SPI.begin();	 // init SPI bus
 	rfid.PCD_Init(); // init MFRC522
 	while (1) {

@@ -21,10 +21,10 @@ void dhtTask(void *pvParameters) {
 		if (isnan(h) || isnan(t)) {
 			lcdPrint(printData, "DHT: error!", 0, 0, pdMS_TO_TICKS(4000));
 		} else {
-			msg[5] = t;
+			msg[5] = round(t);
 			msg[4] = msg[5] / 10 + '0';
 			msg[5] = msg[5] % 10 + '0';
-			msg[13] = h;
+			msg[13] = round(h);
 			msg[12] = msg[13] / 10 + '0';
 			msg[13] = msg[13] % 10 + '0';
 			lcdPrint(printData, msg, 0, 0, pdMS_TO_TICKS(4000));
