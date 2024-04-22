@@ -1,7 +1,7 @@
 #include "cloudTask.h"
 #include "dhtTask.h"
 #include "doorTask.h"
-#include "flameSensor.h"
+#include "flameSensorTask.h"
 #include "global.h"
 #include "printTask.h"
 #include "rfidTask.h"
@@ -13,7 +13,6 @@ TaskHandle_t rfidTaskHandle;
 
 void setup() {
 	Serial.begin(115200);
-	BaseType_t app_cpu = xPortGetCoreID();
 	delay(2000);
 
 	buzzerMutex = xSemaphoreCreateMutex();
@@ -28,10 +27,10 @@ void setup() {
 	xTaskCreatePinnedToCore(rfidTask, "RFID", 3000, NULL, 1, &rfidTaskHandle, 1);
 	xTaskCreatePinnedToCore(flameSensorTask, "Flame", 2048, NULL, 2, NULL, 1);
 	xTaskCreatePinnedToCore(doorTask, "Door", 2048, NULL, 3, &doorTaskHandle, 1);
-
-	Serial.println("Setup done");
 }
 
 void loop() {
+	PrintData printData;
+	lcdPrint(printData, "  System ready!", 1, 0, pdMS_TO_TICKS(1000));
 	vTaskDelete(NULL);
 }
