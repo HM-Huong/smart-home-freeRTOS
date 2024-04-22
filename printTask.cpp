@@ -1,5 +1,7 @@
-#include "printTask.h"
+#include "Arduino.h"
+
 #include "LiquidCrystal_I2C.h"
+#include "printTask.h"
 
 static LiquidCrystal_I2C lcd(0x27, 16, 2);
 static PrintData data;
