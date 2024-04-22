@@ -17,16 +17,16 @@
 #define B_DOOR V0
 #define B_TEMP V1
 #define B_HUM V2
-#define B_FLAME V3
+#define B_MESSAGE V3
 #define B_REMOVE_TAG V4
 #define B_ADD_TAG V5
 #define B_NUM_OF_TAG V6
 
 BLYNK_WRITE(B_DOOR) {
-	int openDoor = param.asInt();
-	if (openDoor == 1) {
+	if (param.asInt()) {
 		buzzerPlay(4699, 100);
 		sendOpenDoorEvent();
+		rfidNormalMode();
 	} else {
 		buzzerPlay(4699, 100);
 		sendCloseDoorEvent();
@@ -69,8 +69,8 @@ void cloudTask(void *pvParameters) {
 				Blynk.virtualWrite(B_TEMP, cloudData.data.dht.temp);
 				Blynk.virtualWrite(B_HUM, cloudData.data.dht.hum);
 				break;
-			case CloudData::FLAME:
-				Blynk.virtualWrite(B_FLAME, cloudData.data.flameStatus);
+			case CloudData::MESSAGE:
+				Blynk.virtualWrite(B_MESSAGE, cloudData.data.message);
 				break;
 			case CloudData::RFID:
 				Blynk.virtualWrite(B_NUM_OF_TAG, cloudData.data.NumOfTag);

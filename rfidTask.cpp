@@ -8,6 +8,8 @@
 
 #define MAX_TAGS 10
 #define TAGS_FILE "/tags.txt"
+#define MAX_WRONG_TIMES 5
+#define DELAY_WRONG_TIMES (5 * 60 * 1000)
 
 static inline void saveTags();
 static inline void loadTags();
@@ -22,8 +24,12 @@ static MFRC522 rfid(SS_PIN, RST_PIN);
 static PrintData printData;
 static CloudData cloudData;
 static uint32_t event, mode = NORMAL_MODE;
+static int wrongTimes = 0;
+static uint32_t lastTryTime = 0;
 
 void rfidTask(void *pvParameters) {
+	static char tmp[17];
+
 	if (!LittleFS.begin(true)) {
 		lcdPrint(printData, "FS: failed", 1, 0, portMAX_DELAY);
 		return;
@@ -34,10 +40,10 @@ void rfidTask(void *pvParameters) {
 	xQueueSend(cloudQueue, &cloudData, portMAX_DELAY);
 	SPI.begin();	 // init SPI bus
 	rfid.PCD_Init(); // init MFRC522
+
 	while (1) {
 		xTaskNotifyWait(0, ADD_TAG | REMOVE_TAG | NORMAL_MODE, &event, 0);
 		if (event & NORMAL_MODE) {
-			static char tmp[17];
 			mode = NORMAL_MODE;
 			snprintf(tmp, sizeof(tmp), "Saved %d tag(s)", tags[0]);
 			lcdPrint(printData, tmp, 1, 0, portMAX_DELAY);
@@ -49,23 +55,49 @@ void rfidTask(void *pvParameters) {
 			lcdPrint(printData, "remove tags", 1, 0, portMAX_DELAY);
 		}
 
-		if (rfid.PICC_IsNewCardPresent()) {	  // new tag is available
-			if (rfid.PICC_ReadCardSerial()) { // NUID has been readed
-				// MFRC522::PICC_Type piccType = rfid.PICC_GetType(rfid.uid.sak);
-				if (mode != NORMAL_MODE) {
-					configTags(mode);
-				} else if (findTag(rfid.uid.uidByte) != -1) {
-					buzzerPlay(4699, 100);
-					buzzerPlay(4699, 100);
-					sendToggleDoorEvent();
-				} else {
-					lcdPrint(printData, "RFID: wrong", 1, 0, portMAX_DELAY);
-					buzzerPlay(1000, 100);
-				}
-
-				rfid.PICC_HaltA();		// halt PICC
-				rfid.PCD_StopCrypto1(); // stop encryption on PCD
+		if (event && wrongTimes) {
+			wrongTimes = 0;
+			cloudData.type = CloudData::MESSAGE;
+			cloudData.data.message = "Reset wrong times";
+			xQueueSend(cloudQueue, &cloudData, portMAX_DELAY);
+		} else if (wrongTimes >= MAX_WRONG_TIMES) {
+			if (millis() - lastTryTime < DELAY_WRONG_TIMES) {
+				snprintf(tmp, sizeof(tmp), "Blocked %ds", (DELAY_WRONG_TIMES - (millis() - lastTryTime)) / 1000);
+				lcdPrint(printData, tmp, 1, 0, portMAX_DELAY);
+				delay(200);
+				continue;
+			} else {
+				wrongTimes = 0;
+				lcdPrint(printData, "Try again", 1, 0, portMAX_DELAY);
 			}
+		}
+
+		// new card is present -> read it
+		if (rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial()) {
+			if (mode != NORMAL_MODE) {
+				configTags(mode);
+			} else if (findTag(rfid.uid.uidByte) != -1) {
+				buzzerPlay(4699, 100);
+				buzzerPlay(4699, 100);
+				sendToggleDoorEvent();
+				wrongTimes = 0;
+			} else if (wrongTimes < MAX_WRONG_TIMES) {
+				++wrongTimes;
+				buzzerPlay(1000, 500);
+				if (wrongTimes == MAX_WRONG_TIMES) {
+					lastTryTime = millis();
+					cloudData.type = CloudData::MESSAGE;
+					cloudData.data.message = "Someone is trying to open the door";
+					xQueueSend(cloudQueue, &cloudData, portMAX_DELAY);
+					sendCloseDoorEvent();
+				} else {
+					snprintf(tmp, sizeof(tmp), "RFID wrong - %d", wrongTimes);
+					lcdPrint(printData, tmp, 1, 0, portMAX_DELAY);
+				}
+			}
+
+			rfid.PICC_HaltA();		// halt PICC
+			rfid.PCD_StopCrypto1(); // stop encryption on PCD
 		}
 	}
 }

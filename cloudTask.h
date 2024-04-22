@@ -5,13 +5,13 @@
 struct CloudData {
 	enum {
 		DOOR,
-		FLAME,
+		MESSAGE,
 		DHT,
 		RFID,
 	} type;
 	union {
 		int openDoor;
-		int flameStatus;
+		char const *message;
 		struct {
 			float temp;
 			float hum;
