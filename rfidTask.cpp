@@ -26,27 +26,26 @@ static CloudData cloudData;
 static uint32_t event, mode = NORMAL_MODE;
 static int wrongTimes = 0;
 static uint32_t lastTryTime = 0;
+static char tmp[17];
 
 void rfidTask(void *pvParameters) {
-	static char tmp[17];
-
+	SPI.begin();	 // init SPI bus
+	rfid.PCD_Init(); // init MFRC522
 	if (!LittleFS.begin(true)) {
 		lcdPrint(printData, "FS: failed", 1, 0, portMAX_DELAY);
-		return;
+		delay(1000);
+		assert(0);
 	}
 	loadTags();
 	cloudData.type = CloudData::RFID;
 	cloudData.data.NumOfTag = tags[0];
 	xQueueSend(cloudQueue, &cloudData, portMAX_DELAY);
-	SPI.begin();	 // init SPI bus
-	rfid.PCD_Init(); // init MFRC522
 
 	while (1) {
 		xTaskNotifyWait(0, ADD_TAG | REMOVE_TAG | NORMAL_MODE, &event, 0);
 		if (event & NORMAL_MODE) {
 			mode = NORMAL_MODE;
-			snprintf(tmp, sizeof(tmp), "Saved %d tag(s)", tags[0]);
-			lcdPrint(printData, tmp, 1, 0, portMAX_DELAY);
+			lcdPrint(printData, "", 1, 0, portMAX_DELAY);
 		} else if (event & ADD_TAG) {
 			mode = ADD_TAG;
 			lcdPrint(printData, "add tags", 1, 0, portMAX_DELAY);
@@ -72,7 +71,7 @@ void rfidTask(void *pvParameters) {
 			}
 		}
 
-		// new card is present -> read it
+		// a new card is present -> read it
 		if (rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial()) {
 			if (mode != NORMAL_MODE) {
 				configTags(mode);
@@ -132,6 +131,23 @@ static inline int findTag(byte *tag) {
 	return -1;
 }
 
+static inline void configTags(uint32_t mode) {
+	if (mode & ADD_TAG) {
+		addTag(rfid.uid.uidByte);
+	} else if (mode & REMOVE_TAG) {
+		removeTag(rfid.uid.uidByte);
+	} else {
+		assert(0);
+	}
+	saveTags();
+	cloudData.type = CloudData::RFID;
+	cloudData.data.NumOfTag = tags[0];
+	xQueueSend(cloudQueue, &cloudData, portMAX_DELAY);
+	delay(2000);
+	snprintf(tmp, sizeof(tmp), "You have %d tags", tags[0]);
+	lcdPrint(printData, tmp, 1, 0, portMAX_DELAY);
+}
+
 static inline void addTag(byte *tag) {
 	if (findTag(rfid.uid.uidByte) == -1) {
 		if (tags[0] < MAX_TAGS) {
@@ -165,23 +181,5 @@ static inline void removeTag(byte *tag) {
 	} else {
 		lcdPrint(printData, "RFID: not found", 1, 0, portMAX_DELAY);
 		buzzerPlay(1000, 100);
-	}
-}
-
-static inline void configTags(uint32_t mode) {
-	if (mode & ADD_TAG) {
-		addTag(rfid.uid.uidByte);
-	} else if (mode & REMOVE_TAG) {
-		removeTag(rfid.uid.uidByte);
-	}
-	saveTags();
-	cloudData.type = CloudData::RFID;
-	cloudData.data.NumOfTag = tags[0];
-	xQueueSend(cloudQueue, &cloudData, portMAX_DELAY);
-	delay(1000);
-	if (mode == ADD_TAG) {
-		lcdPrint(printData, "add tags", 1, 0, portMAX_DELAY);
-	} else if (mode == REMOVE_TAG) {
-		lcdPrint(printData, "remove tags", 1, 0, portMAX_DELAY);
 	}
 }
