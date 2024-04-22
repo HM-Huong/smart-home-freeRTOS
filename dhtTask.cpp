@@ -5,7 +5,7 @@
 #include "printTask.h"
 
 static DHT dht(DHT_PIN, DHT22);
-static char msg[18] = "Tem xxC Hum xx%";
+static char msg[18];
 static float h, t;
 static void const *pcv = NULL;
 static PrintData printData;
@@ -21,12 +21,7 @@ void dhtTask(void *pvParameters) {
 		if (isnan(h) || isnan(t)) {
 			lcdPrint(printData, "DHT: error!", 0, 0, pdMS_TO_TICKS(4000));
 		} else {
-			msg[5] = round(t);
-			msg[4] = msg[5] / 10 + '0';
-			msg[5] = msg[5] % 10 + '0';
-			msg[13] = round(h);
-			msg[12] = msg[13] / 10 + '0';
-			msg[13] = msg[13] % 10 + '0';
+			snprintf(msg, sizeof(msg), "%3.1fC - %3.1f%%", t, h);
 			lcdPrint(printData, msg, 0, 0, pdMS_TO_TICKS(4000));
 			cloudData.data.dht.temp = t;
 			cloudData.data.dht.hum = h;
