@@ -4,7 +4,7 @@
 
 #define DHT_PIN 15
 #define SERVO_PIN 4
-#define FLAME_SENSOR_PIN A19
+#define FLAME_SENSOR_PIN 26
 #define BUZZER_PIN 2
 #define SS_PIN 5
 #define RST_PIN 27

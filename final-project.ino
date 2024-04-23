@@ -30,7 +30,6 @@ void setup() {
 }
 
 void loop() {
-	PrintData printData;
-	lcdPrint(printData, "  System ready!", 1, 0, pdMS_TO_TICKS(1000));
+	lcdPrint(" System ready!", 1, 0, pdMS_TO_TICKS(1000));
 	vTaskDelete(NULL);
 }

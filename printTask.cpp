@@ -21,3 +21,18 @@ void printTask(void *pvParameters) {
 		}
 	}
 }
+
+void serialPrint(char const *message, TickType_t delay) {
+	PrintData data;
+	data.row = -1;
+	data.msg = message;
+	xQueueSend(printQueue, &data, delay);
+}
+
+void lcdPrint(char const *message, int whichRow, int whichCol, TickType_t delay) {
+	PrintData data;
+	data.row = whichRow;
+	data.col = whichCol;
+	data.msg = message;
+	xQueueSend(printQueue, &data, delay);
+}

@@ -4,7 +4,6 @@
 #include "global.h"
 #include "printTask.h"
 
-static PrintData printData;
 static CloudData cloudData;
 
 void flameSensorTask(void *pvParameters) {
@@ -15,7 +14,7 @@ void flameSensorTask(void *pvParameters) {
 
 	while (1) {
 		if (digitalRead(FLAME_SENSOR_PIN) == LOW) {
-			lcdPrint(printData, "Flame detected", 0, 0, 0);
+			lcdPrint("Flame detected", 0, 0, 0);
 			cloudData.data.message = "Flame detected";
 			sendOpenDoorEvent();
 			buzzerPlay(3951, 1000);

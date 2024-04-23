@@ -26,7 +26,6 @@ inline void closeDoor() {
 	servo.detach();
 }
 
-static PrintData printData;
 static CloudData cloudData;
 
 void doorTask(void *pvParameters) {
@@ -49,9 +48,9 @@ void doorTask(void *pvParameters) {
 		}
 
 		if (isOpen) {
-			lcdPrint(printData, "Door opened", 1, 0, pdMS_TO_TICKS(1000));
+			lcdPrint("Door opened", 1, 0, pdMS_TO_TICKS(1000));
 		} else {
-			lcdPrint(printData, "Door closed", 1, 0, pdMS_TO_TICKS(1000));
+			lcdPrint("Door closed", 1, 0, pdMS_TO_TICKS(1000));
 		}
 		cloudData.data.openDoor = isOpen;
 		xQueueSend(cloudQueue, &cloudData, pdMS_TO_TICKS(1000));

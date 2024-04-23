@@ -11,7 +11,6 @@
 #include "BlynkSimpleEsp32.h"
 
 #include "doorTask.h"
-#include "printTask.h"
 #include "rfidTask.h"
 
 #define B_DOOR V0
@@ -54,7 +53,6 @@ BLYNK_WRITE(B_REMOVE_TAG) {
 }
 
 static CloudData cloudData;
-static PrintData printData;
 
 void cloudTask(void *pvParameters) {
 	Blynk.begin(BLYNK_AUTH_TOKEN, SSID, PASSWD);

@@ -21,7 +21,6 @@ static inline void configTags(uint32_t mode);
 static byte tags[MAX_TAGS * 4 + 4] = {1, 0xD1, 0x1C, 0x02, 0x24};
 static byte *const tagsPtr = tags + 1;
 static MFRC522 rfid(SS_PIN, RST_PIN);
-static PrintData printData;
 static CloudData cloudData;
 static uint32_t event, mode = NORMAL_MODE;
 static int wrongTimes = 0;
@@ -32,7 +31,7 @@ void rfidTask(void *pvParameters) {
 	SPI.begin();	 // init SPI bus
 	rfid.PCD_Init(); // init MFRC522
 	if (!LittleFS.begin(true)) {
-		lcdPrint(printData, "FS: failed", 1, 0, portMAX_DELAY);
+		lcdPrint("FS: failed", 1, 0, portMAX_DELAY);
 		delay(1000);
 		assert(0);
 	}
@@ -45,13 +44,13 @@ void rfidTask(void *pvParameters) {
 		xTaskNotifyWait(0, ADD_TAG | REMOVE_TAG | NORMAL_MODE, &event, 0);
 		if (event & NORMAL_MODE) {
 			mode = NORMAL_MODE;
-			lcdPrint(printData, "", 1, 0, portMAX_DELAY);
+			lcdPrint("", 1, 0, portMAX_DELAY);
 		} else if (event & ADD_TAG) {
 			mode = ADD_TAG;
-			lcdPrint(printData, "add tags", 1, 0, portMAX_DELAY);
+			lcdPrint("add tags", 1, 0, portMAX_DELAY);
 		} else if (event & REMOVE_TAG) {
 			mode = REMOVE_TAG;
-			lcdPrint(printData, "remove tags", 1, 0, portMAX_DELAY);
+			lcdPrint("remove tags", 1, 0, portMAX_DELAY);
 		}
 
 		if (event && wrongTimes) {
@@ -62,12 +61,12 @@ void rfidTask(void *pvParameters) {
 		} else if (wrongTimes >= MAX_WRONG_TIMES) {
 			if (millis() - lastTryTime < DELAY_WRONG_TIMES) {
 				snprintf(tmp, sizeof(tmp), "Blocked %ds", (DELAY_WRONG_TIMES - (millis() - lastTryTime)) / 1000);
-				lcdPrint(printData, tmp, 1, 0, portMAX_DELAY);
+				lcdPrint(tmp, 1, 0, portMAX_DELAY);
 				delay(200);
 				continue;
 			} else {
 				wrongTimes = 0;
-				lcdPrint(printData, "Try again", 1, 0, portMAX_DELAY);
+				lcdPrint("Try again", 1, 0, portMAX_DELAY);
 			}
 		}
 
@@ -91,7 +90,7 @@ void rfidTask(void *pvParameters) {
 					sendCloseDoorEvent();
 				} else {
 					snprintf(tmp, sizeof(tmp), "RFID wrong - %d", wrongTimes);
-					lcdPrint(printData, tmp, 1, 0, portMAX_DELAY);
+					lcdPrint(tmp, 1, 0, portMAX_DELAY);
 				}
 			}
 
@@ -104,7 +103,7 @@ void rfidTask(void *pvParameters) {
 static inline void saveTags() {
 	File file = LittleFS.open(TAGS_FILE, "w");
 	if (!file) {
-		lcdPrint(printData, "FS: failed", 1, 0, portMAX_DELAY);
+		lcdPrint("FS: failed", 1, 0, portMAX_DELAY);
 		return;
 	}
 	file.write(tags, tags[0] * 4 + 1);
@@ -114,7 +113,7 @@ static inline void saveTags() {
 static inline void loadTags() {
 	File file = LittleFS.open(TAGS_FILE, "r");
 	if (!file || file.isDirectory()) {
-		lcdPrint(printData, "Use default tags", 1, 0, portMAX_DELAY);
+		lcdPrint("Use default tags", 1, 0, portMAX_DELAY);
 		saveTags(); // save default tags
 		return;
 	}
@@ -145,7 +144,7 @@ static inline void configTags(uint32_t mode) {
 	xQueueSend(cloudQueue, &cloudData, portMAX_DELAY);
 	delay(2000);
 	snprintf(tmp, sizeof(tmp), "You have %d tags", tags[0]);
-	lcdPrint(printData, tmp, 1, 0, portMAX_DELAY);
+	lcdPrint(tmp, 1, 0, portMAX_DELAY);
 }
 
 static inline void addTag(byte *tag) {
@@ -153,21 +152,21 @@ static inline void addTag(byte *tag) {
 		if (tags[0] < MAX_TAGS) {
 			memcpy(tagsPtr + tags[0] * 4, rfid.uid.uidByte, 4);
 			tags[0]++;
-			lcdPrint(printData, "RFID: added", 1, 0, portMAX_DELAY);
+			lcdPrint("RFID: added", 1, 0, portMAX_DELAY);
 			buzzerPlay(4699, 100);
 		} else {
-			lcdPrint(printData, "RFID: full", 1, 0, portMAX_DELAY);
+			lcdPrint("RFID: full", 1, 0, portMAX_DELAY);
 			buzzerPlay(1000, 100);
 		}
 	} else {
-		lcdPrint(printData, "RFID: existed", 1, 0, portMAX_DELAY);
+		lcdPrint("RFID: existed", 1, 0, portMAX_DELAY);
 		buzzerPlay(1000, 100);
 	}
 }
 
 static inline void removeTag(byte *tag) {
 	if (tags[0] == 0) {
-		lcdPrint(printData, "RFID: empty", 1, 0, portMAX_DELAY);
+		lcdPrint("RFID: empty", 1, 0, portMAX_DELAY);
 		buzzerPlay(1000, 100);
 		return;
 	}
@@ -176,10 +175,10 @@ static inline void removeTag(byte *tag) {
 	if (index != -1) {
 		memcpy(tagsPtr + index * 4, tagsPtr + (index + 1) * 4, (tags[0] - index - 1) * 4);
 		tags[0]--;
-		lcdPrint(printData, "RFID: removed", 1, 0, portMAX_DELAY);
+		lcdPrint("RFID: removed", 1, 0, portMAX_DELAY);
 		buzzerPlay(4699, 100);
 	} else {
-		lcdPrint(printData, "RFID: not found", 1, 0, portMAX_DELAY);
+		lcdPrint("RFID: not found", 1, 0, portMAX_DELAY);
 		buzzerPlay(1000, 100);
 	}
 }
