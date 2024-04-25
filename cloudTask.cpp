@@ -20,6 +20,7 @@
 #define B_REMOVE_TAG V4
 #define B_ADD_TAG V5
 #define B_NUM_OF_TAG V6
+#define B_REMOVE_ALL_TAG V7
 
 BLYNK_WRITE(B_DOOR) {
 	if (param.asInt()) {
@@ -40,6 +41,7 @@ BLYNK_WRITE(B_ADD_TAG) {
 		sendAddTagEvent();
 		Blynk.virtualWrite(B_REMOVE_TAG, 0);
 	}
+	Blynk.virtualWrite(B_REMOVE_ALL_TAG, 0);
 }
 
 BLYNK_WRITE(B_REMOVE_TAG) {
@@ -50,12 +52,25 @@ BLYNK_WRITE(B_REMOVE_TAG) {
 		sendRemoveTagEvent();
 		Blynk.virtualWrite(B_ADD_TAG, 0);
 	}
+	Blynk.virtualWrite(B_REMOVE_ALL_TAG, 0);
+}
+
+BLYNK_WRITE(B_REMOVE_ALL_TAG) {
+	if (param.asInt()) {
+		Blynk.virtualWrite(B_REMOVE_TAG, 0);
+		Blynk.virtualWrite(B_ADD_TAG, 0);
+		sendRemoveAllTagEvent();
+		Blynk.virtualWrite(B_REMOVE_ALL_TAG, 0);
+	}
 }
 
 static CloudData cloudData;
 
 void cloudTask(void *pvParameters) {
 	Blynk.begin(BLYNK_AUTH_TOKEN, SSID, PASSWD);
+	Blynk.virtualWrite(B_REMOVE_TAG, 0);
+	Blynk.virtualWrite(B_ADD_TAG, 0);
+	Blynk.virtualWrite(B_REMOVE_ALL_TAG, 0);
 	while (1) {
 		Blynk.run();
 		if (xQueueReceive(cloudQueue, &cloudData, pdMS_TO_TICKS(1000)) == pdTRUE) {
@@ -71,7 +86,7 @@ void cloudTask(void *pvParameters) {
 				Blynk.virtualWrite(B_MESSAGE, cloudData.data.message);
 				break;
 			case CloudData::RFID:
-				Blynk.virtualWrite(B_NUM_OF_TAG, cloudData.data.NumOfTag);
+				Blynk.virtualWrite(B_NUM_OF_TAG, cloudData.data.numOfTag);
 				break;
 			default:
 				assert(0);

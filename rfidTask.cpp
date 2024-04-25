@@ -37,11 +37,11 @@ void rfidTask(void *pvParameters) {
 	}
 	loadTags();
 	cloudData.type = CloudData::RFID;
-	cloudData.data.NumOfTag = tags[0];
+	cloudData.data.numOfTag = tags[0];
 	xQueueSend(cloudQueue, &cloudData, portMAX_DELAY);
 
 	while (1) {
-		xTaskNotifyWait(0, ADD_TAG | REMOVE_TAG | NORMAL_MODE, &event, 0);
+		xTaskNotifyWait(0, ADD_TAG | REMOVE_TAG | NORMAL_MODE | REMOVE_ALL_TAG, &event, 0);
 		if (event & NORMAL_MODE) {
 			mode = NORMAL_MODE;
 			lcdPrint("", 1, 0, portMAX_DELAY);
@@ -51,6 +51,12 @@ void rfidTask(void *pvParameters) {
 		} else if (event & REMOVE_TAG) {
 			mode = REMOVE_TAG;
 			lcdPrint("remove tags", 1, 0, portMAX_DELAY);
+		} else if (event & REMOVE_ALL_TAG) {
+			mode = NORMAL_MODE;
+			tags[0] = 0;
+			lcdPrint("remove all tags", 1, 0, portMAX_DELAY);
+			saveTags();
+			continue;
 		}
 
 		if (event && wrongTimes) {
@@ -108,6 +114,9 @@ static inline void saveTags() {
 	}
 	file.write(tags, tags[0] * 4 + 1);
 	file.close();
+	cloudData.type = CloudData::RFID;
+	cloudData.data.numOfTag = tags[0];
+	xQueueSend(cloudQueue, &cloudData, portMAX_DELAY);
 }
 
 static inline void loadTags() {
@@ -139,9 +148,6 @@ static inline void configTags(uint32_t mode) {
 		assert(0);
 	}
 	saveTags();
-	cloudData.type = CloudData::RFID;
-	cloudData.data.NumOfTag = tags[0];
-	xQueueSend(cloudQueue, &cloudData, portMAX_DELAY);
 	delay(2000);
 	snprintf(tmp, sizeof(tmp), "You have %d tags", tags[0]);
 	lcdPrint(tmp, 1, 0, portMAX_DELAY);

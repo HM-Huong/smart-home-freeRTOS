@@ -16,7 +16,7 @@ struct CloudData {
 			float temp;
 			float hum;
 		} dht;
-		int NumOfTag;
+		int numOfTag;
 	} data;
 };
 
