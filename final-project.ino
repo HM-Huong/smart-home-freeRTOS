@@ -17,19 +17,19 @@ void setup() {
 
 	buzzerMutex = xSemaphoreCreateMutex();
 	pinMode(BUZZER_PIN, OUTPUT);
-	printQueue = xQueueCreate(4, sizeof(PrintData));
-	cloudQueue = xQueueCreate(4, sizeof(CloudData));
+	printQueue = xQueueCreate(32, sizeof(PrintData));
+	cloudQueue = xQueueCreate(32, sizeof(CloudData));
 
-	xTaskCreatePinnedToCore(printTask, "Print", 2048, NULL, 1, NULL, 0);
-	xTaskCreatePinnedToCore(cloudTask, "Cloud", 4048, NULL, 1, NULL, 0);
+	xTaskCreatePinnedToCore(printTask, "Print", 2222, NULL, 1, NULL, 0);
+	xTaskCreatePinnedToCore(cloudTask, "Cloud", 8888, NULL, 1, NULL, 0);
 
-	xTaskCreatePinnedToCore(dhtTask, "DHT", 2048, NULL, 1, NULL, 1);
-	xTaskCreatePinnedToCore(rfidTask, "RFID", 3000, NULL, 1, &rfidTaskHandle, 1);
-	xTaskCreatePinnedToCore(flameSensorTask, "Flame", 2048, NULL, 2, NULL, 1);
-	xTaskCreatePinnedToCore(doorTask, "Door", 2048, NULL, 3, &doorTaskHandle, 1);
+	xTaskCreatePinnedToCore(dhtTask, "DHT", 4444, NULL, 1, NULL, 1);
+	xTaskCreatePinnedToCore(rfidTask, "RFID", 4444, NULL, 1, &rfidTaskHandle, 1);
+	xTaskCreatePinnedToCore(flameSensorTask, "Flame", 4444, NULL, 2, NULL, 1);
+	xTaskCreatePinnedToCore(doorTask, "Door", 4444, NULL, 3, &doorTaskHandle, 1);
 }
 
 void loop() {
-	lcdPrint(" System ready!", 1, 0, pdMS_TO_TICKS(1000));
+	lcdPrint(" System ready!", 1, 0, portMAX_DELAY);
 	vTaskDelete(NULL);
 }
