@@ -5,7 +5,7 @@
 #include "printTask.h"
 
 static CloudData cloudData;
-static bool hasFlame;
+static bool hasFlame = true;
 
 void flameSensorTask(void *pvParameters) {
 	pinMode(FLAME_SENSOR_PIN, INPUT);
